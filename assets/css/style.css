@@ -1,0 +1,61 @@
+body, html {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  background: #2b2a33;
+}
+#board {
+  width: 80%;
+}
+
+.highlight-square {
+  background: rgba(0,0,0,0.1);
+}
+
+.container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%)
+}
+
+.card {
+  background-color: #222129;
+  color: #fff;
+  border: 1px solid #000;
+}
+
+.header {
+  color: #fff !important;
+  background-color: #222129 !important;
+  background: #222129 !important;
+  border-bottom: 1px solid #000 !important;
+}
+
+.card-body {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 11px 11px 0 11px;
+}
+
+input {
+  display: block;
+  position: absolute;
+  top: 5000%;
+  height: 1px;
+}
+
+#button-inline {
+  display: inline-block;
+}
+
+#button-inline button {
+  width: 100%;
+  margin-bottom: 11px;
+  box-sizing: border-box;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
