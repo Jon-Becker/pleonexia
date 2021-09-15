@@ -68,6 +68,7 @@ function get_best_move(depth, game){
   return best_move
 }
 function make_best_move(depth, game){
+  $('#depth').html(`${depth} Moves`)
   setTimeout(function(){
     var best_move = get_best_move(depth, game)
     make_move(best_move)
@@ -274,7 +275,6 @@ function get_material(color, fen){
   return material;
 }
 function updateStatus() {
-  
   if (game.in_checkmate()) {
     notify_audio.play()
     Notiflix.Notify.Success(`Black is in checkmate, white wins!`);
@@ -311,7 +311,7 @@ function updateStatus() {
       }
     }
     if(game.turn() == "b"){
-      make_best_move(0, game)
+      make_best_move(4, game)
     }
   }
 }

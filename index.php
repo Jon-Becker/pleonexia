@@ -31,6 +31,7 @@
             <input type="text" id="pgn">
             <input type="text" id="fen">
             <p>Timer: <span id="timer">0.00<span></p>
+            <p>Depth: <span id="depth">0 Moves<span></p>
             <div class="flex-spacer">&nbsp;</div>
             <div id="button-inline">
               <button class="btn btn-outline-primary" onclick="copy('fen')">Copy FEN</button>
