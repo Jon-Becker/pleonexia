@@ -7,6 +7,7 @@
 }
 
 .board-b72b1 {
+	border: 2px solid #404040;
 	box-sizing: content-box
 }
 
@@ -33,6 +34,7 @@
 
 .highlight1-32417,
 .highlight2-9c5d2 {
+	box-shadow: inset 0 0 999px 0px rgba(0,0,200,0.2)
 }
 
 .notation-322f9 {

@@ -30,9 +30,7 @@
           <div class="card-body">     
             <input type="text" id="pgn">
             <input type="text" id="fen">
-            <p>White Material: <span id="whm">0<span></p>
-            <p>Black Material: <span id="blm">0<span></p><br>
-            <p>Calculated: <span id="viewed">0<span></p>
+            <p>Timer: <span id="timer">0.00<span></p>
             <div class="flex-spacer">&nbsp;</div>
             <div id="button-inline">
               <button class="btn btn-outline-primary" onclick="copy('fen')">Copy FEN</button>
@@ -43,6 +41,7 @@
       </div>
     </div>
 
+    <script src="assets/js/notiflix-aio-2.7.0.min.js"></script>
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/chess.js"></script>
     <script src="assets/js/chessboard-1.0.0.min.js"></script>

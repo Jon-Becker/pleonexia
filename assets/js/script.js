@@ -1,14 +1,15 @@
 var board = null
 var game = new Chess()
 var $board = $('#chess-board')
-var $status = $('#status')
 var $fen = $('#fen')
 var $pgn = $('#pgn')
-var $whm = $('#whm')
-var $blm = $('#blm')
-var $viewed = $('#viewed')
+var notify_audio = new Audio('./assets/sounds/notify.mp3');
+var move_audio_w = new Audio('./assets/sounds/move_piece.mp3');
+var move_audio_b = new Audio('./assets/sounds/move_piece.mp3');
+var capture_audio_w = new Audio('./assets/sounds/capture_piece.mp3');
+var capture_audio_b = new Audio('./assets/sounds/capture_piece.mp3');
 
-
+Notiflix.Notify.Init({ fontFamily:"Quicksand",useGoogleFont:true,position:"right-bottom",useIcon:false,cssAnimationStyle:"from-right" });
 
 function copy(element) {
   let textarea = document.getElementById(element);
@@ -16,39 +17,36 @@ function copy(element) {
   textarea.setSelectionRange(0, 99999);
   document.execCommand("copy");
 }
-function reverseArray(array){
+function reverse_array(array){
   return array.slice().reverse();
 }
-function getMove(move, fen){
-  var temp_move_game = new Chess(fen);
-  temp_move_game.move(move);
-  blm = getMaterial("b", temp_move_game.fen())
-  whm = getMaterial("w", temp_move_game.fen())
+function evaluate_board(temp_move_game){
+  blm = get_material("b", temp_move_game.fen())
+  whm = get_material("w", temp_move_game.fen())
   if(temp_move_game.in_checkmate() && temp_move_game.turn() == "b"){
     whm += 10000
   }
   if(temp_move_game.in_checkmate() && temp_move_game.turn() == "w"){
-    bhm += 10000
+    blm += 10000
   }
   if(temp_move_game.in_draw()){
-    bhm = 0;
+    blm = 0;
     whm = 0;
   }
-  return [move, blm, whm*-1, temp_move_game.fen()];
+  return(whm-blm)
 }
-function getBestMove(depth, fen){
+function depreciated_getBestMove(depth, fen){
   var temp_game = new Chess(fen);
   var best = -99999999;
   var best_move = "";
   var ai_possible_moves = temp_game.moves()
   for(var ai_move of ai_possible_moves){
-    var player_game = new Chess(getMove(ai_move, fen)[3])
+    var player_game = new Chess(get_move(ai_move, fen)[3])
     var player_possible_moves = player_game.moves()
     var min = 99999999;
     var best_response = ""
     for(var player_move of player_possible_moves){
-      $viewed.html(($viewed.html()*1)+1)
-      var player_move_results = getMove(player_move, player_game.fen());
+      var player_move_results = get_move(player_move, player_game.fen());
       if((player_move_results[1] + player_move_results[2]) < min){
         min = (player_move_results[1] + player_move_results[2])
       }
@@ -61,17 +59,76 @@ function getBestMove(depth, fen){
   }
   return [best_move, best];
 }
-function makeBestMove(depth){
-  var fen = game.fen()
-
-  setTimeout(function(){makeMove(getBestMove(depth, fen)[0])},500)
+function get_best_move(depth, game){
+  var start_minimax_timestamp = new Date().getTime();
+  var best_move = begin_minimax(depth, game, true);
+  var end_minimax_timestamp = new Date().getTime();
+  var timestamp = (end_minimax_timestamp-start_minimax_timestamp)
+  $('#timer').html(`${(timestamp/1000).toFixed(2)} seconds`)
+  return best_move
 }
-function makeMove(move){
+function make_best_move(depth, game){
+  setTimeout(function(){
+    var best_move = get_best_move(depth, game)
+    make_move(best_move)
+  },300)
+}
+function begin_minimax(depth, game, maximize){
+  var potential_moves = game.moves()
+  var maximum = -9999999999;
+  var best_move = "";
+
+  for(var move of potential_moves){
+    game.move(move)
+    var move_score = minimax(depth-1, game, -10000000000, 1000000000, !maximize);
+    game.undo()
+    if(move_score >= maximum){
+      best_move = move;
+      maximum = move_score;
+    }
+  }
+  return best_move
+}
+function minimax(depth, game, alpha, beta, maximize){
+  if(depth == 0){
+    return -1 * (evaluate_board(game))
+  }
+
+  var potential_moves = game.moves()
+  if(maximize){
+    var maximum = -9999999999;
+    for(var move of potential_moves){
+      game.move(move)
+      var maximum = Math.max(maximum, minimax(depth-1, game, alpha, beta, !maximize));
+      game.undo()
+      alpha = Math.max(alpha, maximum)
+      if(beta <= alpha) {
+        return maximum;
+      }
+    }
+    return maximum;
+  }
+  else {
+    var maximum = 9999999999;
+    for(var move of potential_moves){
+      game.move(move)
+      var maximum = Math.min(maximum, minimax(depth-1, game, alpha, beta, !maximize));
+      game.undo()
+      beta = Math.min(beta, maximum)
+      if(beta <= alpha) {
+        return maximum;
+      }
+    }
+    return maximum;
+  }
+}
+function make_move(move){
   game.move(move)
   board.position(game.fen())
+  updateStatus()
 }
 function onDragStart(source, piece, position, orientation){
-  if ((game.in_checkmate() === true) || (game.in_draw() === true) /*|| (piece.search(/^b/) !== -1)*/ ) {
+  if ((game.in_checkmate() === true) || (game.in_draw() === true) || (piece.search(/^b/) !== -1)) {
     return false;
   }
 }
@@ -92,7 +149,7 @@ function onSnapEnd(){
   board.position(game.fen())
   updateStatus()
 }
-function getMaterial(color, fen){
+function get_material(color, fen){
   var material = 0;
   var material_game = new Chess(fen);
   var files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -159,10 +216,10 @@ function getMaterial(color, fen){
     [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
     [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
   ];
-  var pawnEvalWhite = reverseArray(pawnEvalBlack);
-  var bishopEvalWhite = reverseArray(bishopEvalBlack);
-  var rookEvalWhite = reverseArray(rookEvalBlack);
-  var kingEvalWhite = reverseArray(kingEvalBlack);
+  var pawnEvalWhite = reverse_array(pawnEvalBlack);
+  var bishopEvalWhite = reverse_array(bishopEvalBlack);
+  var rookEvalWhite = reverse_array(rookEvalBlack);
+  var kingEvalWhite = reverse_array(kingEvalBlack);
   for(var f in files){
     for(var r in rows){
       file = files[f];
@@ -171,30 +228,30 @@ function getMaterial(color, fen){
       if(piece && piece.color == color){
         if(piece.type == "p"){
           if(color == "b"){
-            material += 100 + pawnEvalBlack[r][f];
+            material += 100 + pawnEvalBlack[r][f]*5;
           }
           else {
-            material += 100 + pawnEvalWhite[r][f];
+            material += 100 + pawnEvalWhite[r][f]*5;
           }
         }
         else if (piece.type == "b"){
           bishop_count++;
           if(color == "b"){
-            material += 300 + bishopEvalBlack[r][f];
+            material += 300 + bishopEvalBlack[r][f]*5;
           }
           else {
-            material += 300 + bishopEvalWhite[r][f];
+            material += 300 + bishopEvalWhite[r][f]*5;
           }
         }
         else if (piece.type == "n"){
-          material += 300 + knightEval[r][f];
+          material += 300 + knightEval[r][f]*5;
         }
         else if (piece.type == "r"){
           if(color == "b"){
-            material += 500 + rookEvalBlack[r][f];
+            material += 500 + rookEvalBlack[r][f]*5;
           }
           else {
-            material += 500 + rookEvalWhite[r][f];
+            material += 500 + rookEvalWhite[r][f]*5;
           }
         }
         else if (piece.type == "q"){
@@ -202,10 +259,10 @@ function getMaterial(color, fen){
         }
         else if (piece.type == "k"){
           if(color == "b"){
-            material += 10000 + kingEvalBlack[r][f];
+            material += 10000 + kingEvalBlack[r][f]*5;
           }
           else {
-            material += 10000 + kingEvalWhite[r][f];
+            material += 10000 + kingEvalWhite[r][f]*5;
           }
         }
       }
@@ -216,25 +273,46 @@ function getMaterial(color, fen){
   }
   return material;
 }
-function updateStatus () {
-
-  /*if (game.in_checkmate()) {
-    alert("checkmate")
+function updateStatus() {
+  
+  if (game.in_checkmate()) {
+    notify_audio.play()
+    Notiflix.Notify.Success(`Black is in checkmate, white wins!`);
   }
-  if (game.in_draw()) {
-    alert("stalemate")
+  else if (game.in_draw()) {
+    notify_audio.play()
+    Notiflix.Notify.Success(`Game over, it's a draw.`);
   }
-  if (game.in_check()) {
-    alert("check")
-  }*/
-
-  $fen.val(game.fen())
-  $pgn.val(game.pgn())
-  $whm.html(getMaterial("w", game.fen()))
-  $blm.html(getMaterial("b", game.fen()))
-  //console.log(game.moves())
-  if(game.turn() == "b"){
-    makeBestMove(1)
+  else if (game.in_check()) {
+    if(game.turn() == "b"){
+      Notiflix.Notify.Success(`Black is in check!`);
+    }
+    else {
+      Notiflix.Notify.Success(`White is in check!`);
+    }
+  }
+  else {
+    $fen.val(game.fen())
+    $pgn.val(game.pgn())
+    if(game.history()[game.history().length-1].includes("x")){
+      if(game.turn() == "b"){
+        capture_audio_b.play()
+      }
+      else {
+        capture_audio_w.play()
+      }
+    }
+    else {
+      if(game.turn() == "b"){
+        move_audio_b.play()
+      }
+      else {
+        move_audio_w.play()
+      }
+    }
+    if(game.turn() == "b"){
+      make_best_move(0, game)
+    }
   }
 }
 var config = {
