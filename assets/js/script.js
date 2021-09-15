@@ -16,6 +16,9 @@ function copy(element) {
   textarea.setSelectionRange(0, 99999);
   document.execCommand("copy");
 }
+function reverseArray(array){
+  return array.slice().reverse();
+}
 function getMove(move, fen){
   var temp_move_game = new Chess(fen);
   temp_move_game.move(move);
@@ -95,28 +98,115 @@ function getMaterial(color, fen){
   var files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   var rows = [1, 2, 3, 4, 5, 6, 7, 8];
   var bishop_count = 0;
-  for(var file of files){
-    for(var row of rows){
+
+  var pawnEvalBlack = [
+        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+        [5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0,  5.0],
+        [1.0,  1.0,  2.0,  3.0,  3.0,  2.0,  1.0,  1.0],
+        [0.5,  0.5,  1.0,  2.5,  2.5,  1.0,  0.5,  0.5],
+        [0.0,  0.0,  0.0,  2.0,  2.0,  0.0,  0.0,  0.0],
+        [0.5, -0.5, -1.0,  0.0,  0.0, -1.0, -0.5,  0.5],
+        [0.5,  1.0, 1.0,  -2.0, -2.0,  1.0,  1.0,  0.5],
+        [0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0]
+  ];
+  var knightEval = [
+        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+        [-4.0, -2.0,  0.0,  0.0,  0.0,  0.0, -2.0, -4.0],
+        [-3.0,  0.0,  1.0,  1.5,  1.5,  1.0,  0.0, -3.0],
+        [-3.0,  0.5,  1.5,  2.0,  2.0,  1.5,  0.5, -3.0],
+        [-3.0,  0.0,  1.5,  2.0,  2.0,  1.5,  0.0, -3.0],
+        [-3.0,  0.5,  1.0,  1.5,  1.5,  1.0,  0.5, -3.0],
+        [-4.0, -2.0,  0.0,  0.5,  0.5,  0.0, -2.0, -4.0],
+        [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+  ];
+  var bishopEvalBlack = [
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0],
+    [ -1.0,  0.5,  0.5,  1.0,  1.0,  0.5,  0.5, -1.0],
+    [ -1.0,  0.0,  1.0,  1.0,  1.0,  1.0,  0.0, -1.0],
+    [ -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0, -1.0],
+    [ -1.0,  0.5,  0.0,  0.0,  0.0,  0.0,  0.5, -1.0],
+    [ -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
+  ];
+  var rookEvalBlack = [
+    [  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0],
+    [  0.5,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [ -0.5,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -0.5],
+    [  0.0,   0.0, 0.0,  0.5,  0.5,  0.0,  0.0,  0.0]
+  ];
+  var evalQueen = [
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
+    [ -1.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -0.5,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [  0.0,  0.0,  0.5,  0.5,  0.5,  0.5,  0.0, -0.5],
+    [ -1.0,  0.5,  0.5,  0.5,  0.5,  0.5,  0.0, -1.0],
+    [ -1.0,  0.0,  0.5,  0.0,  0.0,  0.0,  0.0, -1.0],
+    [ -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
+  ];
+  var kingEvalBlack = [
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [ -2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
+    [ -1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
+    [  2.0,  2.0,  0.0,  0.0,  0.0,  0.0,  2.0,  2.0 ],
+    [  2.0,  3.0,  1.0,  0.0,  0.0,  1.0,  3.0,  2.0 ]
+  ];
+  var pawnEvalWhite = reverseArray(pawnEvalBlack);
+  var bishopEvalWhite = reverseArray(bishopEvalBlack);
+  var rookEvalWhite = reverseArray(rookEvalBlack);
+  var kingEvalWhite = reverseArray(kingEvalBlack);
+  for(var f in files){
+    for(var r in rows){
+      file = files[f];
+      row = rows[r];
       piece = material_game.get(`${file}${row}`);
       if(piece && piece.color == color){
         if(piece.type == "p"){
-          material += 100;
+          if(color == "b"){
+            material += 100 + pawnEvalBlack[r][f];
+          }
+          else {
+            material += 100 + pawnEvalWhite[r][f];
+          }
         }
         else if (piece.type == "b"){
           bishop_count++;
-          material += 300;
+          if(color == "b"){
+            material += 300 + bishopEvalBlack[r][f];
+          }
+          else {
+            material += 300 + bishopEvalWhite[r][f];
+          }
         }
         else if (piece.type == "n"){
-          material += 300;
+          material += 300 + knightEval[r][f];
         }
         else if (piece.type == "r"){
-          material += 500;
+          if(color == "b"){
+            material += 500 + rookEvalBlack[r][f];
+          }
+          else {
+            material += 500 + rookEvalWhite[r][f];
+          }
         }
         else if (piece.type == "q"){
-          material += 800;
+          material += 800 + evalQueen[r][f];
         }
         else if (piece.type == "k"){
-          material += 10000;
+          if(color == "b"){
+            material += 10000 + kingEvalBlack[r][f];
+          }
+          else {
+            material += 10000 + kingEvalWhite[r][f];
+          }
         }
       }
     }
