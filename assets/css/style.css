@@ -59,3 +59,32 @@ input {
 .flex-spacer {
   flex: 1 1 auto;
 }
+
+@media only screen and (max-width: 768px) {
+  #board {
+    width: 100%;
+  }
+  .col-8 {
+    width: 100%;
+    flex: initial;
+    max-width: initial;
+    margin-bottom: 5%;
+  }
+  .col-4 {
+    width: 100%;
+    flex: initial;
+    max-width: initial;
+  }
+  .container {
+    position: relative;
+    top: initial;
+    left: initial;
+    transform: initial
+  }
+  .my-2 {
+    display:none;
+  }
+  a.btn {
+    display:none;
+  }
+}
