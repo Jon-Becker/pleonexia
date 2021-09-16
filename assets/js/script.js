@@ -8,6 +8,7 @@ var move_audio_w = new Audio('./assets/sounds/move_piece.mp3');
 var move_audio_b = new Audio('./assets/sounds/move_piece.mp3');
 var capture_audio_w = new Audio('./assets/sounds/capture_piece.mp3');
 var capture_audio_b = new Audio('./assets/sounds/capture_piece.mp3');
+var positionCount;
 
 Notiflix.Notify.Init({
   fontFamily: "Quicksand",
@@ -34,13 +35,14 @@ function reverse_array(array) {
 }
 
 function evaluate_board(temp_move_game) {
+  positionCount++;
   blm = get_material("b", temp_move_game.fen())
   whm = get_material("w", temp_move_game.fen())
   if (temp_move_game.in_checkmate() && temp_move_game.turn() == "b") {
-    whm += 10000
+    whm += 1000000
   }
   if (temp_move_game.in_checkmate() && temp_move_game.turn() == "w") {
-    blm += 10000
+    blm += 1000000
   }
   if (temp_move_game.in_draw()) {
     blm = 0;
@@ -49,37 +51,14 @@ function evaluate_board(temp_move_game) {
   return (whm - blm)
 }
 
-function depreciated_getBestMove(depth, fen) {
-  var temp_game = new Chess(fen);
-  var best = -99999999;
-  var best_move = "";
-  var ai_possible_moves = temp_game.moves()
-  for (var ai_move of ai_possible_moves) {
-    var player_game = new Chess(get_move(ai_move, fen)[3])
-    var player_possible_moves = player_game.moves()
-    var min = 99999999;
-    var best_response = ""
-    for (var player_move of player_possible_moves) {
-      var player_move_results = get_move(player_move, player_game.fen());
-      if ((player_move_results[1] + player_move_results[2]) < min) {
-        min = (player_move_results[1] + player_move_results[2])
-      }
-      //console.log(`${ai_move} responded by ${player_move} leads to ${(player_move_results[1] + player_move_results[2])}, current min of ${min}`)
-    }
-    if (min > best) {
-      best = min;
-      best_move = ai_move;
-    }
-  }
-  return [best_move, best];
-}
-
 function get_best_move(depth, game) {
+  positionCount = 0;
   var start_minimax_timestamp = new Date().getTime();
   var best_move = begin_minimax(depth, game, true);
   var end_minimax_timestamp = new Date().getTime();
   var timestamp = (end_minimax_timestamp - start_minimax_timestamp)
   $('#timer').html(`${(timestamp/1000).toFixed(2)} seconds`)
+  $('#evaluated').html(positionCount)
   return best_move
 }
 
@@ -127,17 +106,17 @@ function minimax(depth, game, alpha, beta, maximize) {
     }
     return maximum;
   } else {
-    var maximum = 9999999999;
+    var minimum = 9999999999;
     for (var move of potential_moves) {
       game.move(move)
-      var maximum = Math.min(maximum, minimax(depth - 1, game, alpha, beta, !maximize));
+      var minimum = Math.min(minimum, minimax(depth - 1, game, alpha, beta, !maximize));
       game.undo()
-      beta = Math.min(beta, maximum)
+      beta = Math.min(beta, minimum)
       if (beta <= alpha) {
-        return maximum;
+        return minimum;
       }
     }
-    return maximum;
+    return minimum;
   }
 }
 
@@ -183,20 +162,20 @@ function get_material(color, fen) {
     [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0],
     [1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0],
     [0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5],
-    [0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0],
-    [0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5],
-    [0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5],
+    [0.0, 0.0, 0.0, 3.0, 3.0, 0.0, 0.0, 0.0],
+    [-1.0, -0.5, 1.0, 0.0, 0.0, 1.0, -0.5, -1.0],
+    [0.5, 1.0, -1.0, -3.0, -3.0, -1.0, 1.0, 0.5],
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   ];
   var knightEval = [
-    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0],
+    [1.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, 1.0],
     [-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0],
     [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
-    [-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0],
-    [-3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0],
+    [-3.0, 0.5, 1.5, 3.0, 3.0, 1.5, 0.5, -3.0],
+    [-3.0, 0.0, 1.5, 3.0, 3.0, 1.5, 0.0, -3.0],
     [-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0],
     [-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0],
-    [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0]
+    [1.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, 1.0]
   ];
   var bishopEvalBlack = [
     [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0],
@@ -209,14 +188,14 @@ function get_material(color, fen) {
     [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
   ];
   var rookEvalBlack = [
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
     [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
     [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
     [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
     [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
     [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
     [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0]
+    [-1.0, -1.0, 0.5, 0.5, 0.5, 0.5, -1.0, -1.0]
   ];
   var evalQueen = [
     [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
@@ -235,8 +214,8 @@ function get_material(color, fen) {
     [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
     [-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
     [-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
-    [2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0],
-    [2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0]
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    [5.0, 5.0, 1.0, 0.0, 0.0, 1.0, 5.0, 5.0]
   ];
   var pawnEvalWhite = reverse_array(pawnEvalBlack);
   var bishopEvalWhite = reverse_array(bishopEvalBlack);
@@ -250,32 +229,32 @@ function get_material(color, fen) {
       if (piece && piece.color == color) {
         if (piece.type == "p") {
           if (color == "b") {
-            material += 100 + pawnEvalBlack[r][f] * 5;
+            material += 80 + pawnEvalBlack[r][f] * 10;
           } else {
-            material += 100 + pawnEvalWhite[r][f] * 5;
+            material += 80 + pawnEvalWhite[r][f] * 10;
           }
         } else if (piece.type == "b") {
           bishop_count++;
           if (color == "b") {
-            material += 300 + bishopEvalBlack[r][f] * 5;
+            material += 300 + bishopEvalBlack[r][f] * 10;
           } else {
-            material += 300 + bishopEvalWhite[r][f] * 5;
+            material += 300 + bishopEvalWhite[r][f] * 10;
           }
         } else if (piece.type == "n") {
-          material += 300 + knightEval[r][f] * 5;
+          material += 300 + knightEval[r][f] * 10;
         } else if (piece.type == "r") {
           if (color == "b") {
-            material += 500 + rookEvalBlack[r][f] * 5;
+            material += 500 + rookEvalBlack[r][f] * 10;
           } else {
-            material += 500 + rookEvalWhite[r][f] * 5;
+            material += 500 + rookEvalWhite[r][f] * 10;
           }
         } else if (piece.type == "q") {
           material += 800 + evalQueen[r][f];
         } else if (piece.type == "k") {
           if (color == "b") {
-            material += 10000 + kingEvalBlack[r][f] * 5;
+            material += 10000 + kingEvalBlack[r][f] * 10;
           } else {
-            material += 10000 + kingEvalWhite[r][f] * 5;
+            material += 10000 + kingEvalWhite[r][f] * 10;
           }
         }
       }
