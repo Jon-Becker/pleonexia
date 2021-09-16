@@ -367,7 +367,7 @@ function get_material(color, fen){
 function updateStatus(game_id, game, side) {
   if (!game.in_checkmate() && !game.in_draw()) {
     if(game.turn() == side){
-      make_best_move(3, game_id, game, side)
+      make_best_move(4, game_id, game, side)
     }
   }
 }
