@@ -16,9 +16,9 @@
     <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow header">
       <h5 class="my-0 mr-md-auto font-weight-normal">Pleonexia</h5>
       <nav class="my-2 my-md-0 mr-md-3">
-        <a class="p-2 text-light" href="https://github.com">GitHub</a>
+        <a class="p-2 text-light" href="https://github.com/Jon-Becker/pleonexia">GitHub</a>
       </nav>
-      <a class="btn btn-outline-primary" href="https://lichess.org">Play on Lichess</a>
+      <a class="btn btn-outline-primary" href="https://lichess.org/@/PleonexiaBot/all">Play on Lichess</a>
     </div>
 
     <div class="container">
@@ -34,6 +34,7 @@
             <p>Depth: <span id="depth">0 Moves<span></p>
             <div class="flex-spacer">&nbsp;</div>
             <div id="button-inline">
+              <button class="btn btn-outline-primary" onclick="reset()">Reset Board</button>
               <button class="btn btn-outline-primary" onclick="copy('fen')">Copy FEN</button>
               <button class="btn btn-outline-primary" onclick="copy('pgn')">Copy PGN</button>
             </div>
