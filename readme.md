@@ -23,7 +23,7 @@ Pleonexia utilizes the popular minimax method to search for and calculate ideal 
 ## Statistics & Specifications
 - Default depth: `3`
   - This parameter can be edited on line 299 within the `updateGame()` function.
-- Lichess Winrate: `37.39%`
+- Lichess Winrate: `40.39%`
   - A lichess bot is currently running and playing 2 games concurrently with a depth of 3. Since we are only material counting, its not a very good AI.
 - AES: `~3100 Evaluations per Second`
 
