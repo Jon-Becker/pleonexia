@@ -18,7 +18,7 @@
       <nav class="my-2 my-md-0 mr-md-3">
         <a class="p-2 text-light" href="https://github.com/Jon-Becker/pleonexia">GitHub</a>
       </nav>
-      <a class="btn btn-outline-primary" href="https://lichess.org/@/PleonexiaBot/all">Play on Lichess</a>
+      <a class="btn btn-outline-primary" href="https://lichess.org/@/Pleonexia2/all">Play on Lichess</a>
     </div>
 
     <div class="container">
