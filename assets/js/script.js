@@ -252,6 +252,24 @@ function get_material(color, material_game) {
   }
   return material;
 }
+function game_trimester(material_game) {
+  var material = 0;
+  var files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  var rows = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  for (var f in files) {
+    for (var r in rows) {
+      file = files[f];
+      row = rows[r];
+      piece = material_game.get(`${file}${row}`);
+      if (piece) {
+        material++;
+      }
+    }
+  }
+  return material;
+}
+
 
 function updateStatus() {
   if (game.in_checkmate()) {
@@ -283,7 +301,17 @@ function updateStatus() {
       }
     }
     if (game.turn() == "b") {
-      make_best_move(3, game)
+      var state = game_trimester(game)
+      if(state <= 5){
+        make_best_move(5, game)
+      }
+      else if(state <= 10){
+        make_best_move(4, game)
+      }
+      else {
+        make_best_move(3, game)
+      }
+      
     }
   }
 }
