@@ -34,21 +34,32 @@ function reverse_array(array) {
   return array.slice().reverse();
 }
 
-function evaluate_board(temp_move_game) {
-  positionCount++;
-  blm = get_material("b", temp_move_game.fen())
-  whm = get_material("w", temp_move_game.fen())
-  if (temp_move_game.in_checkmate() && temp_move_game.turn() == "b") {
+function evaluate_board(temp_move_game){
+  blm = get_material("b", temp_move_game)
+  whm = get_material("w", temp_move_game)
+  if(temp_move_game.in_checkmate() && temp_move_game.turn() == "b"){
     whm += 1000000
   }
-  if (temp_move_game.in_checkmate() && temp_move_game.turn() == "w") {
+  if(temp_move_game.in_checkmate() && temp_move_game.turn() == "w"){
     blm += 1000000
   }
-  if (temp_move_game.in_draw()) {
-    blm = 0;
-    whm = 0;
+  if(temp_move_game.in_checkmate()){
+    if(temp_move_game.turn == "b"){
+      whm += 10000000;
+    }
+    else {
+      blm += 10000000;
+    } 
   }
-  return (whm - blm)
+  if(temp_move_game.in_draw()){
+    if(temp_move_game.turn == "b"){
+      whm -= 100000;
+    }
+    else {
+      blm -= 100000;
+    } 
+  }
+  return(whm-blm)
 }
 
 function get_best_move(depth, game) {
@@ -88,6 +99,7 @@ function begin_minimax(depth, game, maximize) {
 }
 
 function minimax(depth, game, alpha, beta, maximize) {
+  positionCount = positionCount + 1;
   if (depth == 0) {
     return -1 * (evaluate_board(game))
   }
@@ -150,9 +162,8 @@ function onSnapEnd() {
   updateStatus()
 }
 
-function get_material(color, fen) {
+function get_material(color, material_game) {
   var material = 0;
-  var material_game = new Chess(fen);
   var files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
   var rows = [1, 2, 3, 4, 5, 6, 7, 8];
   var bishop_count = 0;
@@ -161,8 +172,8 @@ function get_material(color, fen) {
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
     [5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0],
     [1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0],
-    [0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5],
-    [0.0, 0.0, 0.0, 3.0, 3.0, 0.0, 0.0, 0.0],
+    [0.5, 0.5, 1.0, 3.5, 3.5, 1.0, 0.5, 0.5],
+    [0.0, 0.0, 1.0, 4.0, 4.0, 1.0, 0.0, 0.0],
     [-1.0, -0.5, 1.0, 0.0, 0.0, 1.0, -0.5, -1.0],
     [0.5, 1.0, -1.0, -3.0, -3.0, -1.0, 1.0, 0.5],
     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -173,7 +184,7 @@ function get_material(color, fen) {
     [-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0],
     [-3.0, 0.5, 1.5, 3.0, 3.0, 1.5, 0.5, -3.0],
     [-3.0, 0.0, 1.5, 3.0, 3.0, 1.5, 0.0, -3.0],
-    [-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0],
+    [-3.0, 0.5, 2.0, 1.5, 1.5, 2.0, 0.5, -3.0],
     [-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0],
     [1.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, 1.0]
   ];
@@ -187,39 +198,18 @@ function get_material(color, fen) {
     [-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0],
     [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0]
   ];
-  var rookEvalBlack = [
-    [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
-    [0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5],
-    [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5],
-    [-1.0, -1.0, 0.5, 0.5, 0.5, 0.5, -1.0, -1.0]
-  ];
-  var evalQueen = [
-    [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0],
-    [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0],
-    [-1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0],
-    [-0.5, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5],
-    [0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5],
-    [-1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0],
-    [-1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, -1.0],
-    [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0]
-  ];
   var kingEvalBlack = [
     [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
     [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
     [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
     [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
-    [-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0],
-    [-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0],
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-    [5.0, 5.0, 1.0, 0.0, 0.0, 1.0, 5.0, 5.0]
+    [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0],
+    [5.0, 5.0, -3.0, 0.0, 0.0, -3.0, 5.0, 5.0]
   ];
   var pawnEvalWhite = reverse_array(pawnEvalBlack);
   var bishopEvalWhite = reverse_array(bishopEvalBlack);
-  var rookEvalWhite = reverse_array(rookEvalBlack);
   var kingEvalWhite = reverse_array(kingEvalBlack);
   for (var f in files) {
     for (var r in rows) {
@@ -229,39 +219,36 @@ function get_material(color, fen) {
       if (piece && piece.color == color) {
         if (piece.type == "p") {
           if (color == "b") {
-            material += 80 + pawnEvalBlack[r][f] * 10;
+            material += 20 + (pawnEvalBlack[r][f]*4);
           } else {
-            material += 80 + pawnEvalWhite[r][f] * 10;
+            material += 20 + (pawnEvalWhite[r][f]*4);
           }
         } else if (piece.type == "b") {
           bishop_count++;
           if (color == "b") {
-            material += 300 + bishopEvalBlack[r][f] * 10;
+            material += 90 + (bishopEvalBlack[r][f] * 3);
           } else {
-            material += 300 + bishopEvalWhite[r][f] * 10;
+            material += 90 + (bishopEvalWhite[r][f] * 3);
           }
         } else if (piece.type == "n") {
-          material += 300 + knightEval[r][f] * 10;
+          material += 60 + (knightEval[r][f] * 3);
         } else if (piece.type == "r") {
           if (color == "b") {
-            material += 500 + rookEvalBlack[r][f] * 10;
+            material += 120;
           } else {
-            material += 500 + rookEvalWhite[r][f] * 10;
+            material += 120;
           }
         } else if (piece.type == "q") {
-          material += 800 + evalQueen[r][f];
+          material += 300;
         } else if (piece.type == "k") {
           if (color == "b") {
-            material += 10000 + kingEvalBlack[r][f] * 10;
+            material += 5000 + (kingEvalBlack[r][f] * 4);
           } else {
-            material += 10000 + kingEvalWhite[r][f] * 10;
+            material += 5000 + (kingEvalWhite[r][f] * 4);
           }
         }
       }
     }
-  }
-  if (bishop_count == 2) {
-    material += 50;
   }
   return material;
 }
