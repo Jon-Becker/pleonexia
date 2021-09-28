@@ -311,7 +311,6 @@ function updateStatus() {
       else {
         make_best_move(3, game)
       }
-      
     }
   }
 }
